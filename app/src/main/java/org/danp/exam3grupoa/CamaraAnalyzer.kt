@@ -35,14 +35,17 @@ fun Image.toBitmap(): Bitmap {
 fun bitmapToRedArray(bitmap: Bitmap): Array<Int> {
     val result = Array(256) { 0 }
 
+    // Iterar en todos los pixeles de la img
     for (x in 0 until bitmap.width) {
         for (y in 0 until bitmap.height) {
             val pixel = bitmap.getPixel(x, y)
 
-            // Valor de rojo del pixel, de 0 a 255
+            // Extraer rojo del pixel usando operaciones binarias
             val redChannel = pixel and 0x00FF0000
             val value = redChannel shr 16
+
             // Log.d("DEBUG", pixel.toString(2) + " -> ${redChannel.toString(2)} -> ${value.toString(2)} = " + value)
+
             // Incrementar el contador
             result[value] += 1
         }

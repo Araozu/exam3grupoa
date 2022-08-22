@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -19,6 +20,31 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
+fun fixWidth(input: String, minWidth: Int): String {
+    if (input.length == minWidth) return input
+
+    val b = StringBuilder()
+    for (i in 0 until (minWidth - input.length)) {
+        b.append(" ")
+    }
+    b.append(input)
+    return b.toString()
+}
+
+fun datosHistogramaToStr(data: Array<Int>): String {
+    val str = StringBuilder()
+    for (x in 0..127) {
+        val index1 = fixWidth(x.toString(), 3)
+        val value1 = fixWidth(data[x].toString(), 5)
+
+        val index2 = fixWidth((x + 128).toString(), 3)
+        val value2 = fixWidth(data[x + 128].toString(), 5)
+
+        str.append("$index1: $value1      $index2: $value2\n")
+    }
+    return str.toString()
+}
 
 class MainActivity : AppCompatActivity() {
     private lateinit var viewBinding: ActivityMainBinding
@@ -86,6 +112,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+        // Histograma en el layout
+        val histograma = findViewById<TextView>(R.id.histograma)
 
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
@@ -109,6 +137,9 @@ class MainActivity : AppCompatActivity() {
                 .also {
                     it.setAnalyzer(cameraExecutor, CamaraAnalyzer { redValues ->
                         Log.d("ANALYZER", "" + redValues.count { it != 0 })
+
+                        histograma.text = datosHistogramaToStr(redValues)
+
                     })
                 }
 
