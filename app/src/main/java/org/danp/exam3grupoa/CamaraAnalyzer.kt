@@ -7,9 +7,10 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import java.io.ByteArrayOutputStream
-import java.nio.ByteBuffer
 
-// Convierte formato yuv a rgb
+// ------------------------------------------------------------
+// Convierte una imagen de formato YUV a RGB
+// ------------------------------------------------------------
 fun Image.toBitmap(): Bitmap {
     val yBuffer = planes[0].buffer // Y
     val vuBuffer = planes[2].buffer // VU
@@ -29,9 +30,13 @@ fun Image.toBitmap(): Bitmap {
     return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
 }
 
-// Extrae los pixeles rojos del bitmap, los cuenta y almacena en un array.
-// La posicion 0 del array tiene el numero de pixeles con rojo=0,
-// la posicion 1 el nro. de pixeles con rojo=1, etc.
+// ------------------------------------------------------------
+//
+// Extrae los pixeles rojos, los cuenta, y almacena la cantidad
+// en un array de tamaño 256.
+// Ejm. Si hay 500 pixeles con rojo=20, la posicion 20 del array = 500
+//
+// ------------------------------------------------------------
 fun bitmapToRedArray(bitmap: Bitmap): Array<Int> {
     val result = Array(256) { 0 }
 
@@ -54,6 +59,11 @@ fun bitmapToRedArray(bitmap: Bitmap): Array<Int> {
     return result
 }
 
+// ------------------------------------------------------------
+//
+// Analisis de imagen
+//
+// ------------------------------------------------------------
 class CamaraAnalyzer(val listener: (Array<Int>) -> Unit) : ImageAnalysis.Analyzer {
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {

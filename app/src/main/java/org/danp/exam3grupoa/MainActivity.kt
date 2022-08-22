@@ -21,8 +21,12 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+// ------------------------------------------------------------
+// Funcion de ayuda
+// Rellena 'input' con caracteres en blanco hasta que su longitud sea 'minWidth'
+// ------------------------------------------------------------
 fun fixWidth(input: String, minWidth: Int): String {
-    if (input.length == minWidth) return input
+    if (input.length >= minWidth) return input
 
     val b = StringBuilder()
     for (i in 0 until (minWidth - input.length)) {
@@ -32,12 +36,19 @@ fun fixWidth(input: String, minWidth: Int): String {
     return b.toString()
 }
 
+// ------------------------------------------------------------
+// Funcion de ayuda
+// Convierte los datos del histograma en un String, para mostrarlo
+// en el textview. Aplica formato a 2 columnas
+// ------------------------------------------------------------
 fun datosHistogramaToStr(data: Array<Int>): String {
     val str = StringBuilder()
     for (x in 0..127) {
+        // Primera columna
         val index1 = fixWidth(x.toString(), 3)
         val value1 = fixWidth(data[x].toString(), 5)
 
+        // Segunda columna
         val index2 = fixWidth((x + 128).toString(), 3)
         val value2 = fixWidth(data[x + 128].toString(), 5)
 
@@ -112,7 +123,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        // Histograma en el layout
+
+        // ------------------------------------------------------------
+        //
+        // TextView para el histograma, se manipula mas abajo
+        //
+        // ------------------------------------------------------------
         val histograma = findViewById<TextView>(R.id.histograma)
 
         cameraProviderFuture.addListener({
@@ -128,18 +144,26 @@ class MainActivity : AppCompatActivity() {
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-            // Analisis de imagenes
+            // ------------------------------------------------------------
+            //
+            // Creación del análisis de imágenes.
+            // Se establece el formato a YUV_420_888 para despues convertirlo a RGB
+            //
+            // ------------------------------------------------------------
             val imageAnalysis = ImageAnalysis.Builder()
                 .setTargetResolution(Size(1280, 720))
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
+                    // ------------------------------------------------------------
+                    // El análisis se realiza en la clase CamaraAnalyzer.
+                    // Su parámetro es un callback, que se ejecuta cada vez que se
+                    // procesa la imagen de la vista previa
+                    // ------------------------------------------------------------
                     it.setAnalyzer(cameraExecutor, CamaraAnalyzer { redValues ->
-                        Log.d("ANALYZER", "" + redValues.count { it != 0 })
-
+                        // Actualizar el textview
                         histograma.text = datosHistogramaToStr(redValues)
-
                     })
                 }
 
